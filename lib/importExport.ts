@@ -109,14 +109,26 @@ export function exportTodosToExcel(
   XLSX.writeFile(workbook, name);
 }
 
-export function downloadCsvTemplate(): void {
-  const header = ["title", "description", "dueDate", "category", "completed", "order"];
-  const rows = buildCsvTemplateRows();
+/** Shared CSV template body (same rows as public/sample-todos.csv). */
+export function getCsvTemplateCsv(anchorDate: Date = new Date()): string {
+  const header = [
+    "title",
+    "description",
+    "dueDate",
+    "category",
+    "completed",
+    "order",
+  ];
+  const rows = buildCsvTemplateRows(anchorDate);
   const lines = [
     header.map(csvEscape).join(","),
     ...rows.map((row) => row.map(csvEscape).join(",")),
   ];
-  const blob = new Blob([`${lines.join("\n")}\n`], {
+  return `${lines.join("\n")}\n`;
+}
+
+export function downloadCsvTemplate(): void {
+  const blob = new Blob([getCsvTemplateCsv()], {
     type: "text/csv;charset=utf-8",
   });
   const url = URL.createObjectURL(blob);
@@ -127,11 +139,10 @@ export function downloadCsvTemplate(): void {
   URL.revokeObjectURL(url);
 }
 
-function buildCsvTemplateRows(): string[][] {
-  const today = new Date();
+function buildCsvTemplateRows(anchorDate: Date): string[][] {
   const iso = (offsetDays: number | null) => {
     if (offsetDays === null) return "";
-    const d = new Date(today);
+    const d = new Date(anchorDate);
     d.setDate(d.getDate() + offsetDays);
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, "0");
