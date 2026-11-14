@@ -9,7 +9,7 @@ import {
 } from "date-fns";
 import { enUS } from "date-fns/locale";
 import { Typography } from "antd";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   Calendar,
   dateFnsLocalizer,
@@ -57,6 +57,8 @@ function EventChip({ event }: EventProps<CalendarEvent>) {
 }
 
 export function CalendarView({ todos, onSelectTodo }: CalendarViewProps) {
+  const [date, setDate] = useState(() => new Date());
+
   const events = useMemo<CalendarEvent[]>(
     () =>
       todos
@@ -133,6 +135,8 @@ export function CalendarView({ todos, onSelectTodo }: CalendarViewProps) {
         <Calendar<CalendarEvent>
           localizer={localizer}
           events={events}
+          date={date}
+          onNavigate={setDate}
           defaultView={"month" as View}
           views={["month"]}
           popup
