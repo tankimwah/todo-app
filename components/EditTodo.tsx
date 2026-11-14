@@ -1,6 +1,6 @@
 "use client";
 
-import { DatePicker, Form, Input, Modal, Select, Switch } from "antd";
+import { App, DatePicker, Form, Input, Modal, Select, Switch } from "antd";
 import dayjs, { type Dayjs } from "dayjs";
 import { useEffect } from "react";
 import { CATEGORIES } from "@/lib/constants";
@@ -24,6 +24,7 @@ type EditTodoProps = {
 };
 
 export function EditTodo({ todo, open, onCancel, onSave }: EditTodoProps) {
+  const { message } = App.useApp();
   const [form] = Form.useForm<FormValues>();
 
   useEffect(() => {
@@ -40,13 +41,24 @@ export function EditTodo({ todo, open, onCancel, onSave }: EditTodoProps) {
   const handleOk = async () => {
     if (!todo) return;
     const values = await form.validateFields();
+    const wasComplete = todo.completed;
+    const nowComplete = values.completed;
+
     onSave(todo.id, {
       title: values.title,
       description: values.description ?? "",
       dueDate: values.dueDate ? values.dueDate.format("YYYY-MM-DD") : null,
       category: values.category,
-      completed: values.completed,
+      completed: nowComplete,
     });
+
+    if (!wasComplete && nowComplete) {
+      message.success("Task marked completed");
+    } else if (wasComplete && !nowComplete) {
+      message.success("Task marked incomplete");
+    } else {
+      message.success("Task updated");
+    }
   };
 
   return (
@@ -64,7 +76,7 @@ export function EditTodo({ todo, open, onCancel, onSave }: EditTodoProps) {
           name="completed"
           valuePropName="checked"
         >
-          <Switch checkedChildren="Done" unCheckedChildren="Open" />
+          <Switch checkedChildren="Completed" unCheckedChildren="Incomplete" />
         </Form.Item>
         <Form.Item
           label="Title"

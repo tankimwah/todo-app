@@ -145,7 +145,7 @@ export function CalendarView({ todos, onSelectTodo }: CalendarViewProps) {
           components={{ event: EventChip }}
           onSelectEvent={(event) => onSelectTodo(event.resource)}
           tooltipAccessor={(event) =>
-            `${event.title} · ${event.resource.category}${event.resource.completed ? " · done" : ""}`
+            `${event.title} · ${event.resource.category}${event.resource.completed ? " · completed" : ""}`
           }
         />
       </div>

@@ -43,7 +43,7 @@ export function BulkBar({
           Clear selection
         </Button>
         <Button size="small" type="primary" onClick={onComplete}>
-          Mark complete
+          Mark completed
         </Button>
         <Button size="small" onClick={onIncomplete}>
           Mark incomplete
