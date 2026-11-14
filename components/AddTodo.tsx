@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Card, DatePicker, Form, Input, Select } from "antd";
+import { App, Button, Card, DatePicker, Form, Input, Select } from "antd";
 import dayjs, { type Dayjs } from "dayjs";
 import { CATEGORIES } from "@/lib/constants";
 import type { Category, TodoDraft } from "@/lib/types";
@@ -18,6 +18,7 @@ type AddTodoProps = {
 
 export function AddTodo({ onAdd }: AddTodoProps) {
   const [form] = Form.useForm<FormValues>();
+  const { message } = App.useApp();
 
   const handleFinish = (values: FormValues) => {
     onAdd({
@@ -28,6 +29,7 @@ export function AddTodo({ onAdd }: AddTodoProps) {
     });
     form.resetFields();
     form.setFieldsValue({ category: "Personal" });
+    message.success("Task added");
   };
 
   return (
@@ -44,7 +46,7 @@ export function AddTodo({ onAdd }: AddTodoProps) {
           name="title"
           rules={[{ required: true, message: "Enter a task title" }]}
         >
-          <Input placeholder="What needs doing?" maxLength={120} showCount />
+          <Input placeholder="What needs doing…" maxLength={120} showCount />
         </Form.Item>
 
         <Form.Item label="Description" name="description">

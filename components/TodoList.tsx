@@ -8,6 +8,10 @@ import type { Todo } from "@/lib/types";
 
 type TodoListProps = {
   todos: Todo[];
+  hasAnyTodos: boolean;
+  selectedIds: Set<string>;
+  canDrag: boolean;
+  onToggleSelect: (id: string, selected: boolean) => void;
   onToggle: (id: string) => void;
   onEdit: (todo: Todo) => void;
   onDelete: (id: string) => void;
@@ -16,6 +20,10 @@ type TodoListProps = {
 
 export function TodoList({
   todos,
+  hasAnyTodos,
+  selectedIds,
+  canDrag,
+  onToggleSelect,
   onToggle,
   onEdit,
   onDelete,
@@ -25,7 +33,11 @@ export function TodoList({
     return (
       <Empty
         className="todo-empty"
-        description="No tasks match these filters"
+        description={
+          hasAnyTodos
+            ? "No tasks match these filters"
+            : "No tasks yet — add one above or load sample tasks"
+        }
       />
     );
   }
@@ -38,6 +50,9 @@ export function TodoList({
             key={todo.id}
             todo={todo}
             index={index}
+            selected={selectedIds.has(todo.id)}
+            canDrag={canDrag}
+            onToggleSelect={onToggleSelect}
             onToggle={onToggle}
             onEdit={onEdit}
             onDelete={onDelete}

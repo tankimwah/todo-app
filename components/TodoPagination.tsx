@@ -20,6 +20,9 @@ export function TodoPagination({
   onPageChange,
   onPageSizeChange,
 }: TodoPaginationProps) {
+  const rangeStart = total === 0 ? 0 : (current - 1) * pageSize + 1;
+  const rangeEnd = Math.min(current * pageSize, total);
+
   return (
     <div className="pagination-bar">
       <Space wrap size="middle" align="center">
@@ -34,8 +37,9 @@ export function TodoPagination({
           }))}
         />
         <Typography.Text>
-          Page {current} of {totalPages}
-          {total > 0 ? ` · ${total} task${total === 1 ? "" : "s"}` : ""}
+          {total === 0
+            ? "0 tasks"
+            : `Showing ${rangeStart}–${rangeEnd} of ${total} · Page ${current} of ${totalPages}`}
         </Typography.Text>
       </Space>
 
@@ -46,6 +50,7 @@ export function TodoPagination({
         onChange={onPageChange}
         showSizeChanger={false}
         hideOnSinglePage={false}
+        disabled={total === 0}
         itemRender={(page, type, original) => {
           if (type === "prev") return <button type="button">Previous</button>;
           if (type === "next") return <button type="button">Next</button>;

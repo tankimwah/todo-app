@@ -8,6 +8,7 @@ import {
   startOfWeek,
 } from "date-fns";
 import { enUS } from "date-fns/locale";
+import { Typography } from "antd";
 import { useMemo } from "react";
 import {
   Calendar,
@@ -17,6 +18,7 @@ import {
 } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { CATEGORY_COLORS } from "@/lib/constants";
+import { getDueUrgency } from "@/lib/dates";
 import type { Todo } from "@/lib/types";
 
 const locales = { "en-US": enUS };
@@ -45,7 +47,10 @@ type CalendarViewProps = {
 
 function EventChip({ event }: EventProps<CalendarEvent>) {
   return (
-    <span className="rbc-event-chip" title={event.title}>
+    <span
+      className={`rbc-event-chip${event.resource.completed ? " is-complete" : ""}`}
+      title={event.title}
+    >
       {event.title}
     </span>
   );
@@ -72,29 +77,50 @@ export function CalendarView({ todos, onSelectTodo }: CalendarViewProps) {
 
   const eventPropGetter = (event: CalendarEvent) => {
     const color = CATEGORY_COLORS[event.resource.category];
+    const urgency = getDueUrgency(
+      event.resource.dueDate,
+      event.resource.completed,
+    );
+    const completed = event.resource.completed;
+
     return {
+      className: [
+        completed ? "rbc-event-complete" : "",
+        urgency === "overdue" ? "rbc-event-overdue" : "",
+      ]
+        .filter(Boolean)
+        .join(" "),
       style: {
-        backgroundColor: color,
-        borderColor: color,
+        backgroundColor: completed ? `${color}99` : color,
+        borderColor: urgency === "overdue" ? "#b91c1c" : color,
+        borderWidth: urgency === "overdue" ? 2 : 0,
+        borderStyle: "solid",
         color: "#fff",
+        opacity: completed ? 0.7 : 1,
+        textDecoration: completed ? "line-through" : undefined,
       },
     };
   };
 
   return (
     <div className="calendar-shell">
-      <div className="calendar-legend">
-        {(
-          Object.keys(CATEGORY_COLORS) as Array<keyof typeof CATEGORY_COLORS>
-        ).map((category) => (
-          <span key={category} className="legend-item">
-            <span
-              className="legend-swatch"
-              style={{ backgroundColor: CATEGORY_COLORS[category] }}
-            />
-            {category}
-          </span>
-        ))}
+      <div className="calendar-toolbar-row">
+        <div className="calendar-legend">
+          {(
+            Object.keys(CATEGORY_COLORS) as Array<keyof typeof CATEGORY_COLORS>
+          ).map((category) => (
+            <span key={category} className="legend-item">
+              <span
+                className="legend-swatch"
+                style={{ backgroundColor: CATEGORY_COLORS[category] }}
+              />
+              {category}
+            </span>
+          ))}
+        </div>
+        <Typography.Text type="secondary" className="calendar-summary">
+          {events.length} task{events.length === 1 ? "" : "s"} with due dates
+        </Typography.Text>
       </div>
 
       <div className="calendar-frame">
@@ -109,7 +135,7 @@ export function CalendarView({ todos, onSelectTodo }: CalendarViewProps) {
           components={{ event: EventChip }}
           onSelectEvent={(event) => onSelectTodo(event.resource)}
           tooltipAccessor={(event) =>
-            `${event.title} · ${event.resource.category}`
+            `${event.title} · ${event.resource.category}${event.resource.completed ? " · done" : ""}`
           }
         />
       </div>

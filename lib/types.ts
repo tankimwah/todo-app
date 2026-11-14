@@ -2,6 +2,8 @@ export type Category = "Work" | "Personal" | "Urgent";
 
 export type StatusFilter = "all" | "completed" | "incomplete";
 
+export type CategoryFilter = "all" | Category;
+
 export type DueSort = "manual" | "asc" | "desc";
 
 export type Todo = {
@@ -26,7 +28,15 @@ export type TodoDraft = {
 export type TodoFilters = {
   search: string;
   status: StatusFilter;
+  category: CategoryFilter;
   sort: DueSort;
   page: number;
   pageSize: number;
+};
+
+export type TodoPrefs = {
+  pageSize: number;
+  sort: DueSort;
+  status: StatusFilter;
+  category: CategoryFilter;
 };

@@ -2,79 +2,131 @@ import * as XLSX from "xlsx";
 import { CATEGORIES } from "./constants";
 import type { Category, Todo, TodoDraft } from "./types";
 
-type ImportRow = {
-  title?: string;
-  description?: string;
-  dueDate?: string;
-  category?: string;
-  completed?: string | boolean | number;
+type LooseRow = Record<string, unknown>;
+
+const TITLE_KEYS = ["title", "task", "name"];
+const DESCRIPTION_KEYS = ["description", "details", "notes", "note"];
+const DUE_KEYS = ["duedate", "due date", "due", "deadline"];
+const CATEGORY_KEYS = ["category", "type", "tag"];
+const COMPLETED_KEYS = ["completed", "status", "done"];
+const ORDER_KEYS = ["order", "position", "sort"];
+
+export type ImportedTodo = TodoDraft & {
+  completed: boolean;
+  order?: number;
 };
 
 export function parseTodoFile(file: ArrayBuffer): TodoDraft[] {
-  const workbook = XLSX.read(file, { type: "array", cellDates: true });
-  const sheetName = workbook.SheetNames[0];
-  if (!sheetName) return [];
-
-  const sheet = workbook.Sheets[sheetName];
-  const rows = XLSX.utils.sheet_to_json<ImportRow>(sheet, { defval: "" });
-
-  return rows
-    .map((row) => normalizeRow(row))
-    .filter((row): row is TodoDraft & { completed?: boolean } => Boolean(row?.title))
-    .map(({ title, description, dueDate, category }) => ({
+  return parseTodoFileWithStatus(file).map(
+    ({ title, description, dueDate, category }) => ({
       title,
       description,
       dueDate,
       category,
-    }));
+    }),
+  );
 }
 
-export function parseTodoFileWithStatus(
-  file: ArrayBuffer,
-): Array<TodoDraft & { completed: boolean }> {
+export function parseTodoFileWithStatus(file: ArrayBuffer): ImportedTodo[] {
   const workbook = XLSX.read(file, { type: "array", cellDates: true });
   const sheetName = workbook.SheetNames[0];
   if (!sheetName) return [];
 
   const sheet = workbook.Sheets[sheetName];
-  const rows = XLSX.utils.sheet_to_json<ImportRow>(sheet, { defval: "" });
+  const rows = XLSX.utils.sheet_to_json<LooseRow>(sheet, { defval: "" });
 
   return rows
-    .map((row) => {
-      const draft = normalizeRow(row);
-      if (!draft) return null;
-      return {
-        ...draft,
-        completed: parseCompleted(row.completed),
-      };
-    })
-    .filter((row): row is TodoDraft & { completed: boolean } => row !== null);
+    .map((row) => normalizeLooseRow(row))
+    .filter((row): row is ImportedTodo => row !== null);
 }
 
-export function exportTodosToExcel(todos: Todo[], filename = "todo-report.xlsx"): void {
+export function exportTodosToExcel(
+  todos: Todo[],
+  filename?: string,
+): void {
+  const stamp = new Date().toISOString().slice(0, 10);
+  const name = filename ?? `focuslist-report-${stamp}.xlsx`;
+
   const rows = todos.map((todo) => ({
     title: todo.title,
     description: todo.description,
     dueDate: todo.dueDate ?? "",
     category: todo.category,
     completed: todo.completed ? "yes" : "no",
+    order: todo.order,
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(rows);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "Todos");
-  XLSX.writeFile(workbook, filename);
+  XLSX.writeFile(workbook, name);
 }
 
-function normalizeRow(row: ImportRow): TodoDraft | null {
-  const title = String(row.title ?? "").trim();
+export function downloadCsvTemplate(): void {
+  const header = "title,description,dueDate,category,completed,order\n";
+  const sample =
+    "Prepare demo,Walk through FocusList,2026-11-14,Work,no,0\n" +
+    "Buy groceries,Milk and eggs,2026-11-16,Personal,no,1\n";
+  const blob = new Blob([header + sample], {
+    type: "text/csv;charset=utf-8",
+  });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = "focuslist-import-template.csv";
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
+
+function normalizeLooseRow(row: LooseRow): ImportedTodo | null {
+  const mapped = mapKeys(row);
+  const title = String(mapped.title ?? "").trim();
   if (!title) return null;
 
-  const description = String(row.description ?? "").trim();
-  const dueDate = normalizeDueDate(row.dueDate);
-  const category = normalizeCategory(row.category);
+  const description = String(mapped.description ?? "").trim();
+  const dueDate = normalizeDueDate(mapped.dueDate);
+  const category = normalizeCategory(mapped.category);
+  const completed = parseCompleted(mapped.completed);
+  const order = parseOrder(mapped.order);
 
-  return { title, description, dueDate, category };
+  return {
+    title,
+    description,
+    dueDate,
+    category,
+    completed,
+    ...(order !== undefined ? { order } : {}),
+  };
+}
+
+function mapKeys(row: LooseRow): {
+  title?: unknown;
+  description?: unknown;
+  dueDate?: unknown;
+  category?: unknown;
+  completed?: unknown;
+  order?: unknown;
+} {
+  const entries = Object.entries(row).map(([key, value]) => [
+    key.trim().toLowerCase().replace(/[_-]+/g, " "),
+    value,
+  ]);
+
+  const pick = (aliases: string[]) => {
+    for (const [key, value] of entries) {
+      if (aliases.includes(key as string)) return value;
+    }
+    return undefined;
+  };
+
+  return {
+    title: pick(TITLE_KEYS),
+    description: pick(DESCRIPTION_KEYS),
+    dueDate: pick(DUE_KEYS),
+    category: pick(CATEGORY_KEYS),
+    completed: pick(COMPLETED_KEYS),
+    order: pick(ORDER_KEYS),
+  };
 }
 
 function normalizeCategory(value: unknown): Category {
@@ -115,4 +167,11 @@ function parseCompleted(value: unknown): boolean {
     .trim()
     .toLowerCase();
   return ["yes", "true", "1", "completed", "done"].includes(text);
+}
+
+function parseOrder(value: unknown): number | undefined {
+  if (value === undefined || value === null || value === "") return undefined;
+  const num = Number(value);
+  if (!Number.isFinite(num)) return undefined;
+  return Math.trunc(num);
 }
