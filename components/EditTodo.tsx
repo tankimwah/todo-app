@@ -1,6 +1,6 @@
 "use client";
 
-import { DatePicker, Form, Input, Modal, Select } from "antd";
+import { DatePicker, Form, Input, Modal, Select, Switch } from "antd";
 import dayjs, { type Dayjs } from "dayjs";
 import { useEffect } from "react";
 import { CATEGORIES } from "@/lib/constants";
@@ -11,13 +11,16 @@ type FormValues = {
   description?: string;
   dueDate?: Dayjs | null;
   category: Category;
+  completed: boolean;
 };
+
+type EditDraft = TodoDraft & { completed: boolean };
 
 type EditTodoProps = {
   todo: Todo | null;
   open: boolean;
   onCancel: () => void;
-  onSave: (id: string, draft: TodoDraft) => void;
+  onSave: (id: string, draft: EditDraft) => void;
 };
 
 export function EditTodo({ todo, open, onCancel, onSave }: EditTodoProps) {
@@ -30,6 +33,7 @@ export function EditTodo({ todo, open, onCancel, onSave }: EditTodoProps) {
       description: todo.description,
       dueDate: todo.dueDate ? dayjs(todo.dueDate) : null,
       category: todo.category,
+      completed: todo.completed,
     });
   }, [todo, form]);
 
@@ -41,6 +45,7 @@ export function EditTodo({ todo, open, onCancel, onSave }: EditTodoProps) {
       description: values.description ?? "",
       dueDate: values.dueDate ? values.dueDate.format("YYYY-MM-DD") : null,
       category: values.category,
+      completed: values.completed,
     });
   };
 
@@ -54,6 +59,13 @@ export function EditTodo({ todo, open, onCancel, onSave }: EditTodoProps) {
       destroyOnHidden
     >
       <Form form={form} layout="vertical" requiredMark={false}>
+        <Form.Item
+          label="Completed"
+          name="completed"
+          valuePropName="checked"
+        >
+          <Switch checkedChildren="Done" unCheckedChildren="Open" />
+        </Form.Item>
         <Form.Item
           label="Title"
           name="title"
