@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   cacheComponents: false,
   transpilePackages: [
-    "@fullcalendar/react",
+    "react-big-calendar",
     "antd",
     "@ant-design/icons",
     "@ant-design/cssinjs",

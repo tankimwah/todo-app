@@ -1,50 +1,79 @@
 "use client";
 
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 import {
   DeleteOutlined,
   EditOutlined,
   HolderOutlined,
 } from "@ant-design/icons";
 import { Button, Checkbox, Space, Tag, Typography } from "antd";
+import { useRef } from "react";
+import { useDrag, useDrop } from "react-dnd";
 import { CATEGORY_COLORS } from "@/lib/constants";
 import type { Todo } from "@/lib/types";
 
+export const TODO_DND_TYPE = "TODO_ITEM";
+
+type DragItem = {
+  id: string;
+  index: number;
+};
+
 type TodoItemProps = {
   todo: Todo;
+  index: number;
   onToggle: (id: string) => void;
   onEdit: (todo: Todo) => void;
   onDelete: (id: string) => void;
+  onReorder: (activeId: string, overId: string) => void;
 };
 
-export function TodoItem({ todo, onToggle, onEdit, onDelete }: TodoItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: todo.id });
+export function TodoItem({
+  todo,
+  index,
+  onToggle,
+  onEdit,
+  onDelete,
+  onReorder,
+}: TodoItemProps) {
+  const rowRef = useRef<HTMLElement | null>(null);
+  const handleRef = useRef<HTMLButtonElement | null>(null);
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
+  const [{ isDragging }, drag, preview] = useDrag(
+    () => ({
+      type: TODO_DND_TYPE,
+      item: { id: todo.id, index } satisfies DragItem,
+      collect: (monitor) => ({
+        isDragging: monitor.isDragging(),
+      }),
+    }),
+    [todo.id, index],
+  );
+
+  const [, drop] = useDrop(
+    () => ({
+      accept: TODO_DND_TYPE,
+      hover: (item: DragItem) => {
+        if (!rowRef.current || item.index === index) return;
+        onReorder(item.id, todo.id);
+        item.index = index;
+      },
+    }),
+    [index, todo.id, onReorder],
+  );
+
+  preview(drop(rowRef));
+  drag(handleRef);
 
   return (
     <article
-      ref={setNodeRef}
-      style={style}
+      ref={rowRef}
       className={`todo-item${todo.completed ? " is-complete" : ""}${isDragging ? " is-dragging" : ""}`}
     >
       <button
         type="button"
+        ref={handleRef}
         className="drag-handle"
         aria-label={`Reorder ${todo.title}`}
-        {...attributes}
-        {...listeners}
       >
         <HolderOutlined />
       </button>

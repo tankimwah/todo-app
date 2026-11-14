@@ -1,20 +1,8 @@
 "use client";
 
-import {
-  DndContext,
-  KeyboardSensor,
-  PointerSensor,
-  closestCenter,
-  type DragEndEvent,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
 import { Empty } from "antd";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 import { TodoItem } from "./TodoItem";
 import type { Todo } from "@/lib/types";
 
@@ -33,19 +21,6 @@ export function TodoList({
   onDelete,
   onReorder,
 }: TodoListProps) {
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
-  );
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-    onReorder(String(active.id), String(over.id));
-  };
-
   if (todos.length === 0) {
     return (
       <Empty
@@ -56,27 +31,20 @@ export function TodoList({
   }
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-    >
-      <SortableContext
-        items={todos.map((todo) => todo.id)}
-        strategy={verticalListSortingStrategy}
-      >
-        <div className="todo-list" role="list">
-          {todos.map((todo) => (
-            <TodoItem
-              key={todo.id}
-              todo={todo}
-              onToggle={onToggle}
-              onEdit={onEdit}
-              onDelete={onDelete}
-            />
-          ))}
-        </div>
-      </SortableContext>
-    </DndContext>
+    <DndProvider backend={HTML5Backend}>
+      <div className="todo-list" role="list">
+        {todos.map((todo, index) => (
+          <TodoItem
+            key={todo.id}
+            todo={todo}
+            index={index}
+            onToggle={onToggle}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onReorder={onReorder}
+          />
+        ))}
+      </div>
+    </DndProvider>
   );
 }

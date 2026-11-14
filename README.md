@@ -1,6 +1,6 @@
 # FocusList — Comprehensive To-Do App
 
-Next.js (App Router) + Ant Design to-do manager with local persistence, search/filter/sort, pagination, CSV/Excel import, Excel export, calendar view, and drag-and-drop reordering.
+Next.js (App Router) + Ant Design to-do manager with local persistence, search/filter/sort, pagination, CSV/Excel import, Excel export, **react-big-calendar** month view, and **react-dnd** drag-and-drop reordering.
 
 ## Run
 
@@ -26,7 +26,7 @@ npm start
 - Pagination with page size 5 / 10 / 15 / 20
 - Persist tasks in `localStorage` across reloads
 - Import CSV or Excel; export Excel report
-- Calendar view colored by category
-- Drag-and-drop reorder (Manual order sort)
+- Calendar view (react-big-calendar) colored by category
+- Drag-and-drop reorder with react-dnd (Manual order sort)
 
 Sample import file: [`public/sample-todos.csv`](public/sample-todos.csv).
