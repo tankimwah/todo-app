@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Card, DatePicker, Form, Input, Select, Space } from "antd";
+import { Button, Card, DatePicker, Form, Input, Select } from "antd";
 import dayjs, { type Dayjs } from "dayjs";
 import { CATEGORIES } from "@/lib/constants";
 import type { Category, TodoDraft } from "@/lib/types";
@@ -56,11 +56,13 @@ export function AddTodo({ onAdd }: AddTodoProps) {
           />
         </Form.Item>
 
-        <Space wrap size="middle" style={{ width: "100%" }} className="form-row">
-          <Form.Item label="Due date" name="dueDate" style={{ marginBottom: 0 }}>
+        <div className="form-row">
+          <Form.Item label="Due date" name="dueDate" className="form-row-due">
             <DatePicker
+              allowClear
               format="YYYY-MM-DD"
-              style={{ width: 180 }}
+              style={{ width: "100%" }}
+              placeholder="No due date"
               disabledDate={(current) =>
                 Boolean(current && current.isBefore(dayjs().startOf("day")))
               }
@@ -71,7 +73,7 @@ export function AddTodo({ onAdd }: AddTodoProps) {
             label="Category"
             name="category"
             rules={[{ required: true }]}
-            style={{ marginBottom: 0, minWidth: 160 }}
+            className="form-row-category"
           >
             <Select
               options={CATEGORIES.map((category) => ({
@@ -81,12 +83,12 @@ export function AddTodo({ onAdd }: AddTodoProps) {
             />
           </Form.Item>
 
-          <Form.Item label=" " style={{ marginBottom: 0 }}>
-            <Button type="primary" htmlType="submit">
+          <Form.Item label=" " className="form-row-submit" colon={false}>
+            <Button type="primary" htmlType="submit" block>
               Add task
             </Button>
           </Form.Item>
-        </Space>
+        </div>
       </Form>
     </Card>
   );

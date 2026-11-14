@@ -32,7 +32,10 @@ const theme = {
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <AntdRegistry>
-      <ConfigProvider theme={theme}>
+      <ConfigProvider
+        theme={theme}
+        getPopupContainer={() => document.body}
+      >
         <App>{children}</App>
       </ConfigProvider>
     </AntdRegistry>

@@ -65,7 +65,12 @@ export function EditTodo({ todo, open, onCancel, onSave }: EditTodoProps) {
           <Input.TextArea rows={3} maxLength={500} showCount />
         </Form.Item>
         <Form.Item label="Due date" name="dueDate">
-          <DatePicker format="YYYY-MM-DD" style={{ width: "100%" }} />
+          <DatePicker
+            allowClear
+            format="YYYY-MM-DD"
+            style={{ width: "100%" }}
+            placeholder="No due date"
+          />
         </Form.Item>
         <Form.Item
           label="Category"
