@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, Tabs, Typography } from "antd";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTodos } from "@/hooks/useTodos";
 import { getSeedTodoDrafts } from "@/lib/seedTodos";
 import type { Category, Todo } from "@/lib/types";
@@ -44,16 +44,33 @@ export function TodoApp() {
 
   const [editing, setEditing] = useState<Todo | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isReordering, setIsReordering] = useState(false);
+  const [activeTab, setActiveTab] = useState("list");
+
+  const canEnterReorder =
+    filters.sort === "manual" && totalFiltered > filters.pageSize;
+
+  const listTodos = isReordering ? filteredTodos : pagedTodos;
+
+  useEffect(() => {
+    if (filters.sort !== "manual" || activeTab !== "list") {
+      setIsReordering(false);
+      return;
+    }
+    if (totalFiltered <= filters.pageSize) {
+      setIsReordering(false);
+    }
+  }, [filters.sort, filters.pageSize, activeTab, totalFiltered]);
 
   const selectedList = useMemo(() => [...selectedIds], [selectedIds]);
 
-  const pageIds = useMemo(
-    () => pagedTodos.map((todo) => todo.id),
-    [pagedTodos],
+  const visibleIds = useMemo(
+    () => listTodos.map((todo) => todo.id),
+    [listTodos],
   );
 
   const allOnPageSelected =
-    pageIds.length > 0 && pageIds.every((id) => selectedIds.has(id));
+    visibleIds.length > 0 && visibleIds.every((id) => selectedIds.has(id));
 
   const onToggleSelect = useCallback((id: string, selected: boolean) => {
     setSelectedIds((prev) => {
@@ -67,15 +84,15 @@ export function TodoApp() {
   const onToggleSelectAllPage = useCallback(() => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      const everySelected = pageIds.every((id) => next.has(id));
+      const everySelected = visibleIds.every((id) => next.has(id));
       if (everySelected) {
-        pageIds.forEach((id) => next.delete(id));
+        visibleIds.forEach((id) => next.delete(id));
       } else {
-        pageIds.forEach((id) => next.add(id));
+        visibleIds.forEach((id) => next.add(id));
       }
       return next;
     });
-  }, [pageIds]);
+  }, [visibleIds]);
 
   const clearSelection = useCallback(() => {
     setSelectedIds(new Set());
@@ -132,6 +149,8 @@ export function TodoApp() {
 
       <Card className="panel-card main-panel" variant="borderless">
         <Tabs
+          activeKey={activeTab}
+          onChange={setActiveTab}
           items={[
             {
               key: "list",
@@ -143,14 +162,19 @@ export function TodoApp() {
                     status={filters.status}
                     category={filters.category}
                     sort={filters.sort}
+                    isReordering={isReordering}
+                    canEnterReorder={canEnterReorder}
+                    filteredCount={totalFiltered}
                     onSearchChange={setSearch}
                     onStatusChange={setStatus}
                     onCategoryChange={setCategory}
                     onSortChange={setSort}
+                    onStartReorder={() => setIsReordering(true)}
+                    onDoneReorder={() => setIsReordering(false)}
                   />
                   <BulkBar
                     selectedCount={selectedList.length}
-                    pageCount={pageIds.length}
+                    pageCount={visibleIds.length}
                     allOnPageSelected={allOnPageSelected}
                     onToggleSelectAllPage={onToggleSelectAllPage}
                     onClear={clearSelection}
@@ -172,24 +196,27 @@ export function TodoApp() {
                     }}
                   />
                   <TodoList
-                    todos={pagedTodos}
+                    todos={listTodos}
                     hasAnyTodos={totalAll > 0}
                     selectedIds={selectedIds}
                     canDrag={filters.sort === "manual"}
+                    compact={isReordering}
                     onToggleSelect={onToggleSelect}
                     onToggle={toggleTodo}
                     onEdit={setEditing}
                     onDelete={handleDelete}
                     onReorder={reorderTodos}
                   />
-                  <TodoPagination
-                    current={currentPage}
-                    pageSize={filters.pageSize}
-                    total={totalFiltered}
-                    totalPages={totalPages}
-                    onPageChange={setPage}
-                    onPageSizeChange={setPageSize}
-                  />
+                  {!isReordering ? (
+                    <TodoPagination
+                      current={currentPage}
+                      pageSize={filters.pageSize}
+                      total={totalFiltered}
+                      totalPages={totalPages}
+                      onPageChange={setPage}
+                      onPageSizeChange={setPageSize}
+                    />
+                  ) : null}
                 </>
               ),
             },

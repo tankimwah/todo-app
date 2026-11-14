@@ -109,6 +109,13 @@ button,
   max-width: 420px;
 }
 
+.filters-hint-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 0.85rem;
+}
+
 .filters-hint {
   font-size: 0.85rem;
 }
@@ -155,7 +162,37 @@ button,
     border-color var(--duration) var(--ease-out),
     background-color var(--duration) var(--ease-out),
     transform var(--duration) var(--ease-out),
-    opacity var(--duration) var(--ease-out);
+    opacity var(--duration) var(--ease-out),
+    padding var(--duration) var(--ease-out);
+}
+
+.todo-item.is-compact {
+  grid-template-columns: auto auto auto 1fr;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.45rem 0.75rem;
+}
+
+.todo-list.is-compact {
+  gap: 0.35rem;
+}
+
+.todo-item.is-compact .todo-item-top {
+  margin-bottom: 0;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.todo-item.is-compact .todo-title {
+  font-size: 0.95rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.todo-item.is-compact .todo-due {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  white-space: nowrap;
 }
 
 .todo-item:hover {

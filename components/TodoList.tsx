@@ -11,6 +11,7 @@ type TodoListProps = {
   hasAnyTodos: boolean;
   selectedIds: Set<string>;
   canDrag: boolean;
+  compact?: boolean;
   onToggleSelect: (id: string, selected: boolean) => void;
   onToggle: (id: string) => void;
   onEdit: (todo: Todo) => void;
@@ -23,6 +24,7 @@ export function TodoList({
   hasAnyTodos,
   selectedIds,
   canDrag,
+  compact = false,
   onToggleSelect,
   onToggle,
   onEdit,
@@ -44,7 +46,7 @@ export function TodoList({
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="todo-list" role="list">
+      <div className={`todo-list${compact ? " is-compact" : ""}`} role="list">
         {todos.map((todo, index) => (
           <TodoItem
             key={todo.id}
@@ -52,6 +54,7 @@ export function TodoList({
             index={index}
             selected={selectedIds.has(todo.id)}
             canDrag={canDrag}
+            compact={compact}
             onToggleSelect={onToggleSelect}
             onToggle={onToggle}
             onEdit={onEdit}

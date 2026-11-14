@@ -1,6 +1,6 @@
 "use client";
 
-import { Input, Radio, Select, Space, Typography } from "antd";
+import { Button, Input, Radio, Select, Space, Typography } from "antd";
 import { useEffect, useState } from "react";
 import { CATEGORIES } from "@/lib/constants";
 import type { CategoryFilter, DueSort, StatusFilter } from "@/lib/types";
@@ -10,10 +10,15 @@ type FiltersProps = {
   status: StatusFilter;
   category: CategoryFilter;
   sort: DueSort;
+  isReordering: boolean;
+  canEnterReorder: boolean;
+  filteredCount: number;
   onSearchChange: (value: string) => void;
   onStatusChange: (value: StatusFilter) => void;
   onCategoryChange: (value: CategoryFilter) => void;
   onSortChange: (value: DueSort) => void;
+  onStartReorder: () => void;
+  onDoneReorder: () => void;
 };
 
 export function Filters({
@@ -21,10 +26,15 @@ export function Filters({
   status,
   category,
   sort,
+  isReordering,
+  canEnterReorder,
+  filteredCount,
   onSearchChange,
   onStatusChange,
   onCategoryChange,
   onSortChange,
+  onStartReorder,
+  onDoneReorder,
 }: FiltersProps) {
   const [searchDraft, setSearchDraft] = useState(search);
 
@@ -39,11 +49,24 @@ export function Filters({
     return () => window.clearTimeout(timer);
   }, [searchDraft, search, onSearchChange]);
 
+  let hint: string;
+  if (sort !== "manual") {
+    hint = "Switch to Manual order to drag and reorder tasks.";
+  } else if (isReordering) {
+    hint = `Showing all ${filteredCount} matching tasks in compact rows — drag to set order.`;
+  } else if (canEnterReorder) {
+    hint =
+      "Drag on this page, or use Reorder to arrange the full filtered list.";
+  } else {
+    hint = "Drag the handle to reorder.";
+  }
+
   return (
     <div className="filters-bar">
       <Input.Search
         allowClear
-        placeholder="Search by title or description…" aria-label="Search tasks"
+        placeholder="Search by title or description…"
+        aria-label="Search tasks"
         value={searchDraft}
         onChange={(event) => setSearchDraft(event.target.value)}
         onSearch={onSearchChange}
@@ -85,16 +108,21 @@ export function Filters({
         />
       </Space>
 
-      {sort !== "manual" ? (
+      <div className="filters-hint-row">
         <Typography.Text type="secondary" className="filters-hint">
-          Switch to Manual order to drag and reorder tasks.
+          {hint}
         </Typography.Text>
-      ) : (
-        <Typography.Text type="secondary" className="filters-hint">
-          Drag the handle to reorder. Order applies across the whole list, not
-          just this page.
-        </Typography.Text>
-      )}
+        {sort === "manual" && canEnterReorder && !isReordering ? (
+          <Button type="default" size="small" onClick={onStartReorder}>
+            Reorder
+          </Button>
+        ) : null}
+        {isReordering ? (
+          <Button type="primary" size="small" onClick={onDoneReorder}>
+            Done
+          </Button>
+        ) : null}
+      </div>
     </div>
   );
 }

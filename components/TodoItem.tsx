@@ -24,6 +24,7 @@ type TodoItemProps = {
   index: number;
   selected: boolean;
   canDrag: boolean;
+  compact?: boolean;
   onToggleSelect: (id: string, selected: boolean) => void;
   onToggle: (id: string) => void;
   onEdit: (todo: Todo) => void;
@@ -36,6 +37,7 @@ export function TodoItem({
   index,
   selected,
   canDrag,
+  compact = false,
   onToggleSelect,
   onToggle,
   onEdit,
@@ -77,7 +79,7 @@ export function TodoItem({
   return (
     <article
       ref={rowRef}
-      className={`todo-item${todo.completed ? " is-complete" : ""}${isDragging ? " is-dragging" : ""}${urgency === "overdue" ? " is-overdue" : ""}${urgency === "due-soon" ? " is-due-soon" : ""}`}
+      className={`todo-item${compact ? " is-compact" : ""}${todo.completed ? " is-complete" : ""}${isDragging ? " is-dragging" : ""}${urgency === "overdue" ? " is-overdue" : ""}${urgency === "due-soon" ? " is-due-soon" : ""}`}
       role="listitem"
     >
       <Checkbox
@@ -117,13 +119,26 @@ export function TodoItem({
             strong
             delete={todo.completed}
             className="todo-title"
+            ellipsis={compact}
           >
             {todo.title}
           </Typography.Text>
           <Tag color={CATEGORY_COLORS[todo.category]}>{todo.category}</Tag>
+          {compact ? (
+            <Typography.Text
+              className={`todo-due${urgency === "overdue" ? " todo-due-overdue" : ""}${urgency === "due-soon" ? " todo-due-soon" : ""}`}
+              type={
+                urgency === "none" || urgency === "upcoming"
+                  ? "secondary"
+                  : undefined
+              }
+            >
+              {formatDueLabel(todo.dueDate, todo.completed)}
+            </Typography.Text>
+          ) : null}
         </div>
 
-        {todo.description ? (
+        {!compact && todo.description ? (
           <Typography.Paragraph
             type="secondary"
             ellipsis={{ rows: 2 }}
@@ -133,35 +148,43 @@ export function TodoItem({
           </Typography.Paragraph>
         ) : null}
 
-        <Typography.Text
-          className={`todo-due${urgency === "overdue" ? " todo-due-overdue" : ""}${urgency === "due-soon" ? " todo-due-soon" : ""}`}
-          type={urgency === "none" || urgency === "upcoming" ? "secondary" : undefined}
-        >
-          {formatDueLabel(todo.dueDate, todo.completed)}
-        </Typography.Text>
+        {!compact ? (
+          <Typography.Text
+            className={`todo-due${urgency === "overdue" ? " todo-due-overdue" : ""}${urgency === "due-soon" ? " todo-due-soon" : ""}`}
+            type={
+              urgency === "none" || urgency === "upcoming"
+                ? "secondary"
+                : undefined
+            }
+          >
+            {formatDueLabel(todo.dueDate, todo.completed)}
+          </Typography.Text>
+        ) : null}
       </div>
 
-      <Space className="todo-actions">
-        <Button
-          type="text"
-          icon={<EditOutlined />}
-          aria-label={`Edit ${todo.title}`}
-          onClick={() => onEdit(todo)}
-        />
-        <Popconfirm
-          title="Delete this task?"
-          okText="Delete"
-          okButtonProps={{ danger: true }}
-          onConfirm={() => onDelete(todo.id)}
-        >
+      {!compact ? (
+        <Space className="todo-actions">
           <Button
             type="text"
-            danger
-            icon={<DeleteOutlined />}
-            aria-label={`Delete ${todo.title}`}
+            icon={<EditOutlined />}
+            aria-label={`Edit ${todo.title}`}
+            onClick={() => onEdit(todo)}
           />
-        </Popconfirm>
-      </Space>
+          <Popconfirm
+            title="Delete this task?"
+            okText="Delete"
+            okButtonProps={{ danger: true }}
+            onConfirm={() => onDelete(todo.id)}
+          >
+            <Button
+              type="text"
+              danger
+              icon={<DeleteOutlined />}
+              aria-label={`Delete ${todo.title}`}
+            />
+          </Popconfirm>
+        </Space>
+      ) : null}
     </article>
   );
 }
