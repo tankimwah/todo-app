@@ -75,6 +75,11 @@ export function CalendarView({ todos, onSelectTodo }: CalendarViewProps) {
     [todos],
   );
 
+  const openWithDueCount = useMemo(
+    () => events.filter((event) => !event.resource.completed).length,
+    [events],
+  );
+
   const eventPropGetter = (event: CalendarEvent) => {
     const color = CATEGORY_COLORS[event.resource.category];
     const urgency = getDueUrgency(
@@ -119,7 +124,8 @@ export function CalendarView({ todos, onSelectTodo }: CalendarViewProps) {
           ))}
         </div>
         <Typography.Text type="secondary" className="calendar-summary">
-          {events.length} task{events.length === 1 ? "" : "s"} with due dates
+          {openWithDueCount} open with due date
+          {openWithDueCount === 1 ? "" : "s"}
         </Typography.Text>
       </div>
 
