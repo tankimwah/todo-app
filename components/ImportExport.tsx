@@ -17,7 +17,7 @@ type ImportExportProps = {
   filteredTodos: Todo[];
   allTodos: Todo[];
   onImport: (
-    rows: Array<TodoDraft & { completed?: boolean; order?: number }>,
+    rows: Array<TodoDraft & { completed?: boolean }>,
     mode: "append" | "replace",
   ) => void;
   onLoadSample: (mode: "append" | "replace") => void;

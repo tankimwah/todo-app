@@ -9,7 +9,6 @@ const DESCRIPTION_KEYS = ["description", "details", "notes", "note"];
 const DUE_KEYS = ["duedate", "due date", "due", "deadline"];
 const CATEGORY_KEYS = ["category", "type", "tag"];
 const COMPLETED_KEYS = ["completed", "status", "done"];
-const ORDER_KEYS = ["order", "position", "sort"];
 
 const HEADER_FILL = "0D9488";
 const ZEBRA_FILL = "F0FDFA";
@@ -62,7 +61,6 @@ const SUMMARY_TABLE_CELL_STYLE = {
 
 export type ImportedTodo = TodoDraft & {
   completed: boolean;
-  order?: number;
 };
 
 export function parseTodoFile(file: ArrayBuffer): TodoDraft[] {
@@ -117,7 +115,6 @@ export function getCsvTemplateCsv(anchorDate: Date = new Date()): string {
     "dueDate",
     "category",
     "completed",
-    "order",
   ];
   const rows = buildCsvTemplateRows(anchorDate);
   const lines = [
@@ -128,7 +125,8 @@ export function getCsvTemplateCsv(anchorDate: Date = new Date()): string {
 }
 
 export function downloadCsvTemplate(): void {
-  const blob = new Blob([getCsvTemplateCsv()], {
+  // BOM so Excel on Windows opens the file as UTF-8
+  const blob = new Blob(["\uFEFF", getCsvTemplateCsv()], {
     type: "text/csv;charset=utf-8",
   });
   const url = URL.createObjectURL(blob);
@@ -151,14 +149,14 @@ function buildCsvTemplateRows(anchorDate: Date): string[][] {
   };
 
   return [
-    ["Prepare interview demo", "Walk through add, filter, calendar, and export", iso(0), "Work", "Incomplete", "0"],
-    ["Review pull requests", "Team board wrap-up", iso(-2), "Work", "Completed", "1"],
-    ["Buy groceries", "Milk, eggs, and greens", iso(2), "Personal", "Incomplete", "2"],
-    ["Call dentist", "Reschedule cleaning", iso(-3), "Personal", "Incomplete", "3"],
-    ["Fix production alert", "Pager follow-up", iso(-1), "Urgent", "Incomplete", "4"],
-    ["Plan weekend hike", "Check trail conditions", iso(5), "Personal", "Incomplete", "5"],
-    ["Renew domain", "focuslist.app", iso(10), "Urgent", "Incomplete", "6"],
-    ["Inbox zero backlog", "No due date — sort anytime", iso(null), "Work", "Completed", "7"],
+    ["Prepare interview demo", "Walk through add, filter, calendar, and export", iso(0), "Work", "Incomplete"],
+    ["Review pull requests", "Team board wrap-up", iso(-2), "Work", "Completed"],
+    ["Buy groceries", "Milk, eggs, and greens", iso(2), "Personal", "Incomplete"],
+    ["Call dentist", "Reschedule cleaning", iso(-3), "Personal", "Incomplete"],
+    ["Fix production alert", "Pager follow-up", iso(-1), "Urgent", "Incomplete"],
+    ["Plan weekend hike", "Check trail conditions", iso(5), "Personal", "Incomplete"],
+    ["Renew domain", "focuslist.app", iso(10), "Urgent", "Incomplete"],
+    ["Inbox zero backlog", "No due date - sort anytime", iso(null), "Work", "Completed"],
   ];
 }
 
@@ -365,7 +363,6 @@ function normalizeLooseRow(row: LooseRow): ImportedTodo | null {
   const dueDate = normalizeDueDate(mapped.dueDate);
   const category = normalizeCategory(mapped.category);
   const completed = parseCompleted(mapped.completed);
-  const order = parseOrder(mapped.order);
 
   return {
     title,
@@ -373,7 +370,6 @@ function normalizeLooseRow(row: LooseRow): ImportedTodo | null {
     dueDate,
     category,
     completed,
-    ...(order !== undefined ? { order } : {}),
   };
 }
 
@@ -383,7 +379,6 @@ function mapKeys(row: LooseRow): {
   dueDate?: unknown;
   category?: unknown;
   completed?: unknown;
-  order?: unknown;
 } {
   const entries = Object.entries(row).map(([key, value]) => [
     key.trim().toLowerCase().replace(/[_-]+/g, " "),
@@ -403,7 +398,6 @@ function mapKeys(row: LooseRow): {
     dueDate: pick(DUE_KEYS),
     category: pick(CATEGORY_KEYS),
     completed: pick(COMPLETED_KEYS),
-    order: pick(ORDER_KEYS),
   };
 }
 
@@ -448,11 +442,4 @@ function parseCompleted(value: unknown): boolean {
     return false;
   }
   return ["yes", "true", "1", "completed", "done"].includes(text);
-}
-
-function parseOrder(value: unknown): number | undefined {
-  if (value === undefined || value === null || value === "") return undefined;
-  const num = Number(value);
-  if (!Number.isFinite(num)) return undefined;
-  return Math.trunc(num);
 }

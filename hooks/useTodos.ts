@@ -148,7 +148,7 @@ export function useTodos() {
 
   const importTodos = useCallback(
     (
-      rows: Array<TodoDraft & { completed?: boolean; order?: number }>,
+      rows: Array<TodoDraft & { completed?: boolean }>,
       mode: "append" | "replace" = "append",
     ) => {
       const stamp = nowIso();
@@ -165,16 +165,14 @@ export function useTodos() {
             completed: Boolean(row.completed),
             dueDate: row.dueDate,
             category: row.category,
-            order: typeof row.order === "number" ? row.order : order,
+            order,
             createdAt: stamp,
             updatedAt: stamp,
           } satisfies Todo;
         });
 
         if (mode === "replace") {
-          return incoming
-            .map((todo, index) => ({ ...todo, order: index }))
-            .sort((a, b) => a.order - b.order);
+          return incoming.map((todo, index) => ({ ...todo, order: index }));
         }
 
         return [...base, ...incoming];

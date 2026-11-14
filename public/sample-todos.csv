@@ -1,9 +1,9 @@
-title,description,dueDate,category,completed,order
-Prepare interview demo,"Walk through add, filter, calendar, and export",2026-11-14,Work,Incomplete,0
-Review pull requests,Team board wrap-up,2026-11-12,Work,Completed,1
-Buy groceries,"Milk, eggs, and greens",2026-11-16,Personal,Incomplete,2
-Call dentist,Reschedule cleaning,2026-11-11,Personal,Incomplete,3
-Fix production alert,Pager follow-up,2026-11-13,Urgent,Incomplete,4
-Plan weekend hike,Check trail conditions,2026-11-19,Personal,Incomplete,5
-Renew domain,focuslist.app,2026-11-24,Urgent,Incomplete,6
-Inbox zero backlog,No due date — sort anytime,,Work,Completed,7
+title,description,dueDate,category,completed
+Prepare interview demo,"Walk through add, filter, calendar, and export",2026-11-14,Work,Incomplete
+Review pull requests,Team board wrap-up,2026-11-12,Work,Completed
+Buy groceries,"Milk, eggs, and greens",2026-11-16,Personal,Incomplete
+Call dentist,Reschedule cleaning,2026-11-11,Personal,Incomplete
+Fix production alert,Pager follow-up,2026-11-13,Urgent,Incomplete
+Plan weekend hike,Check trail conditions,2026-11-19,Personal,Incomplete
+Renew domain,focuslist.app,2026-11-24,Urgent,Incomplete
+Inbox zero backlog,No due date - sort anytime,,Work,Completed
