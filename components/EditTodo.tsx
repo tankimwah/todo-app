@@ -5,6 +5,7 @@ import dayjs, { type Dayjs } from "dayjs";
 import { useEffect } from "react";
 import { CATEGORIES } from "@/lib/constants";
 import type { Category, Todo, TodoDraft } from "@/lib/types";
+import { formRequiredMark } from "./formRequiredMark";
 
 type FormValues = {
   title: string;
@@ -70,7 +71,7 @@ export function EditTodo({ todo, open, onCancel, onSave }: EditTodoProps) {
       okText="Save changes"
       destroyOnHidden
     >
-      <Form form={form} layout="vertical" requiredMark={false}>
+      <Form form={form} layout="vertical" requiredMark={formRequiredMark}>
         <Form.Item
           label="Completed"
           name="completed"

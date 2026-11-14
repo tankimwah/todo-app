@@ -4,6 +4,7 @@ import { App, Button, Card, DatePicker, Form, Input, Select } from "antd";
 import dayjs, { type Dayjs } from "dayjs";
 import { CATEGORIES } from "@/lib/constants";
 import type { Category, TodoDraft } from "@/lib/types";
+import { formRequiredMark } from "./formRequiredMark";
 
 type FormValues = {
   title: string;
@@ -39,7 +40,7 @@ export function AddTodo({ onAdd }: AddTodoProps) {
         layout="vertical"
         onFinish={handleFinish}
         initialValues={{ category: "Personal" as Category }}
-        requiredMark={false}
+        requiredMark={formRequiredMark}
       >
         <Form.Item
           label="Title"
