@@ -4,6 +4,11 @@ import { App, DatePicker, Form, Input, Modal, Select, Switch } from "antd";
 import dayjs, { type Dayjs } from "dayjs";
 import { useEffect } from "react";
 import { CATEGORIES } from "@/lib/constants";
+import {
+  categoryRules,
+  normalizeTodoText,
+  titleRules,
+} from "@/lib/todoFormRules";
 import type { Category, Todo, TodoDraft } from "@/lib/types";
 import { formRequiredMark } from "./formRequiredMark";
 
@@ -46,8 +51,8 @@ export function EditTodo({ todo, open, onCancel, onSave }: EditTodoProps) {
     const nowComplete = values.completed;
 
     onSave(todo.id, {
-      title: values.title,
-      description: values.description ?? "",
+      title: normalizeTodoText(values.title),
+      description: normalizeTodoText(values.description),
       dueDate: values.dueDate ? values.dueDate.format("YYYY-MM-DD") : null,
       category: values.category,
       completed: nowComplete,
@@ -79,11 +84,7 @@ export function EditTodo({ todo, open, onCancel, onSave }: EditTodoProps) {
         >
           <Switch checkedChildren="Completed" unCheckedChildren="Incomplete" />
         </Form.Item>
-        <Form.Item
-          label="Title"
-          name="title"
-          rules={[{ required: true, message: "Enter a task title" }]}
-        >
+        <Form.Item label="Title" name="title" rules={titleRules}>
           <Input maxLength={120} showCount />
         </Form.Item>
         <Form.Item label="Description" name="description">
@@ -97,11 +98,7 @@ export function EditTodo({ todo, open, onCancel, onSave }: EditTodoProps) {
             placeholder="No due date"
           />
         </Form.Item>
-        <Form.Item
-          label="Category"
-          name="category"
-          rules={[{ required: true }]}
-        >
+        <Form.Item label="Category" name="category" rules={categoryRules}>
           <Select
             options={CATEGORIES.map((category) => ({
               value: category,

@@ -3,6 +3,11 @@
 import { App, Button, Card, DatePicker, Form, Input, Select } from "antd";
 import dayjs, { type Dayjs } from "dayjs";
 import { CATEGORIES } from "@/lib/constants";
+import {
+  categoryRules,
+  normalizeTodoText,
+  titleRules,
+} from "@/lib/todoFormRules";
 import type { Category, TodoDraft } from "@/lib/types";
 import { formRequiredMark } from "./formRequiredMark";
 
@@ -23,8 +28,8 @@ export function AddTodo({ onAdd }: AddTodoProps) {
 
   const handleFinish = (values: FormValues) => {
     onAdd({
-      title: values.title,
-      description: values.description ?? "",
+      title: normalizeTodoText(values.title),
+      description: normalizeTodoText(values.description),
       dueDate: values.dueDate ? values.dueDate.format("YYYY-MM-DD") : null,
       category: values.category,
     });
@@ -42,11 +47,7 @@ export function AddTodo({ onAdd }: AddTodoProps) {
         initialValues={{ category: "Personal" as Category }}
         requiredMark={formRequiredMark}
       >
-        <Form.Item
-          label="Title"
-          name="title"
-          rules={[{ required: true, message: "Enter a task title" }]}
-        >
+        <Form.Item label="Title" name="title" rules={titleRules}>
           <Input placeholder="What needs doing…" maxLength={120} showCount />
         </Form.Item>
 
@@ -75,7 +76,7 @@ export function AddTodo({ onAdd }: AddTodoProps) {
           <Form.Item
             label="Category"
             name="category"
-            rules={[{ required: true }]}
+            rules={categoryRules}
             className="form-row-category"
           >
             <Select
