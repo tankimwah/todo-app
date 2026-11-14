@@ -137,7 +137,7 @@ export function ImportExport({
                   message.info("Nothing to export with current filters.");
                   return;
                 }
-                exportTodosToExcel(filteredTodos);
+                exportTodosToExcel(filteredTodos, { scope: "filtered" });
                 message.success(
                   `Excel report downloaded (${filteredTodos.length} task${filteredTodos.length === 1 ? "" : "s"}).`,
                 );
@@ -151,7 +151,7 @@ export function ImportExport({
                   message.info("Nothing to export yet.");
                   return;
                 }
-                exportTodosToExcel(allTodos);
+                exportTodosToExcel(allTodos, { scope: "all" });
                 message.success(
                   `Excel report downloaded (${allTodos.length} task${allTodos.length === 1 ? "" : "s"}).`,
                 );
