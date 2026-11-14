@@ -110,11 +110,13 @@ export function exportTodosToExcel(
 }
 
 export function downloadCsvTemplate(): void {
-  const header = "title,description,dueDate,category,completed,order\n";
-  const sample =
-    "Prepare demo,Walk through FocusList,2026-11-14,Work,no,0\n" +
-    "Buy groceries,Milk and eggs,2026-11-16,Personal,no,1\n";
-  const blob = new Blob([header + sample], {
+  const header = ["title", "description", "dueDate", "category", "completed", "order"];
+  const rows = buildCsvTemplateRows();
+  const lines = [
+    header.map(csvEscape).join(","),
+    ...rows.map((row) => row.map(csvEscape).join(",")),
+  ];
+  const blob = new Blob([`${lines.join("\n")}\n`], {
     type: "text/csv;charset=utf-8",
   });
   const url = URL.createObjectURL(blob);
@@ -123,6 +125,37 @@ export function downloadCsvTemplate(): void {
   anchor.download = "focuslist-import-template.csv";
   anchor.click();
   URL.revokeObjectURL(url);
+}
+
+function buildCsvTemplateRows(): string[][] {
+  const today = new Date();
+  const iso = (offsetDays: number | null) => {
+    if (offsetDays === null) return "";
+    const d = new Date(today);
+    d.setDate(d.getDate() + offsetDays);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  };
+
+  return [
+    ["Prepare interview demo", "Walk through add, filter, calendar, and export", iso(0), "Work", "Incomplete", "0"],
+    ["Review pull requests", "Team board wrap-up", iso(-2), "Work", "Completed", "1"],
+    ["Buy groceries", "Milk, eggs, and greens", iso(2), "Personal", "Incomplete", "2"],
+    ["Call dentist", "Reschedule cleaning", iso(-3), "Personal", "Incomplete", "3"],
+    ["Fix production alert", "Pager follow-up", iso(-1), "Urgent", "Incomplete", "4"],
+    ["Plan weekend hike", "Check trail conditions", iso(5), "Personal", "Incomplete", "5"],
+    ["Renew domain", "focuslist.app", iso(10), "Urgent", "Incomplete", "6"],
+    ["Inbox zero backlog", "No due date — sort anytime", iso(null), "Work", "Completed", "7"],
+  ];
+}
+
+function csvEscape(value: string): string {
+  if (/[",\n\r]/.test(value)) {
+    return `"${value.replace(/"/g, '""')}"`;
+  }
+  return value;
 }
 
 function pickImportSheet(
