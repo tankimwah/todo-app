@@ -96,6 +96,9 @@ export function EditTodo({ todo, open, onCancel, onSave }: EditTodoProps) {
             format="YYYY-MM-DD"
             style={{ width: "100%" }}
             placeholder="No due date"
+            disabledDate={(current) =>
+              Boolean(current && current.isBefore(dayjs().startOf("day")))
+            }
           />
         </Form.Item>
         <Form.Item label="Category" name="category" rules={categoryRules}>
